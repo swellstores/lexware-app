@@ -1,0 +1,46 @@
+{
+	"id": "lexware",
+	"name": "Lexware Office",
+	"type": "integration",
+	"version": "1.0.0",
+	"description": "Invoices and credit notes in Lexware Office for your orders",
+	"support_email": "support@swell.is",
+	"repository_url": "https://github.com/swellstores/lexware-app",
+	"price_external": true,
+	"images": [
+		{
+			"id": "invoices",
+			"image_src": "assets/images/1-invoices.png",
+			"title": "Paid orders, invoiced in Lexware",
+			"description": "An invoice is created in Lexware Office when an order is paid, and a credit note when it is refunded."
+		},
+		{
+			"id": "on-the-order",
+			"image_src": "assets/images/2-on-the-order.png",
+			"title": "Every document, on its order",
+			"description": "Each order shows its invoice and credit notes, with the Lexware number, the PDF and a link into Lexware."
+		},
+		{
+			"id": "exact",
+			"image_src": "assets/images/3-exact-to-the-cent.png",
+			"title": "Exact to the cent",
+			"description": "The invoice total is what the customer paid, with the right Lexware tax type for Germany, the EU and exports."
+		},
+		{
+			"id": "needs-attention",
+			"image_src": "assets/images/4-needs-attention.png",
+			"title": "Nothing lost quietly",
+			"description": "What Lexware refuses is listed with the reason. Correct the cause and retry, one by one or all at once."
+		},
+		{
+			"id": "setup",
+			"image_src": "assets/images/5-setup.png",
+			"title": "Set up in a minute",
+			"description": "Paste your Lexware API key, test the connection, and start with drafts until you are ready."
+		}
+	],
+	"permissions": [
+		"read_orders",
+		"read_accounts"
+	]
+}

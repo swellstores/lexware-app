@@ -1,0 +1,50 @@
+{
+  "label": "Connection",
+  "description": "Connect your Lexware Office account. Create an API key in Lexware under Extensions → Public API (app.lexware.de/addons/public-api) and paste it here. The Public API needs the Lexware plan XL.",
+  "fields": [
+    {
+      "id": "api_key",
+      "label": "API key",
+      "type": "secret",
+      "admin_span": 2
+    },
+    {
+      "id": "company",
+      "label": "Connected account",
+      "type": "short_text",
+      "description": "Filled in by Test connection.",
+      "admin_span": 2,
+      "readonly": true,
+      "placeholder": "Not tested yet"
+    },
+    {
+      "id": "test-connection",
+      "label": "Test connection",
+      "type": "action",
+      "function": "test-connection",
+      "loading_label": "Testing…",
+      "hint": "Checks the saved API key with Lexware and shows how the account is set up"
+    },
+    {
+      "id": "enabled",
+      "label": "Create documents automatically",
+      "type": "toggle",
+      "description": "While this is on, an invoice is created in Lexware when an order is paid, and a credit note when a payment is refunded. Orders in other currencies than EUR are skipped.",
+      "default": false
+    }
+  ],
+  "actions": [
+    {
+      "id": "retry-failed",
+      "label": "Retry failed documents",
+      "function": "process-documents",
+      "loading_label": "Starting…",
+      "hint": "Tries again to create every document listed under Needs attention",
+      "modal": {
+        "title": "Retry failed documents",
+        "description": "Tries again to create every invoice and credit note that is listed under Orders → Lexware documents → Needs attention, and finishes the ones that were interrupted. Use it after you corrected what stopped them, for example the API key. A document that exists in Lexware is never created twice.",
+        "submit_label": "Retry"
+      }
+    }
+  ]
+}

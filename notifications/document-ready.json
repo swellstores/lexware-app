@@ -1,0 +1,22 @@
+{
+  "collection": "documents",
+  "label": "Lexware document for the customer",
+  "description": "Sends a finalized invoice or credit note to the customer, with a link to the PDF. Sent once per document, when \"E-mail documents to customers\" is on in the Lexware Office app.",
+  "method": "email",
+  "event": "ready",
+  "contact": "customer_email",
+  "subject": "{% if language == 'en' %}{% if type == 'credit_note' %}Your credit note{% else %}Your invoice{% endif %} {{ number }} from {{ store.name }}{% else %}{% if type == 'credit_note' %}Ihre Rechnungskorrektur{% else %}Ihre Rechnung{% endif %} {{ number }} von {{ store.name }}{% endif %}",
+  "sample": {
+    "type": "invoice",
+    "status": "created",
+    "number": "RE0042",
+    "order_number": "1042",
+    "customer_name": "Erika Musterfrau",
+    "customer_email": "erika@example.com",
+    "language": "de",
+    "amount": 108.94,
+    "currency": "EUR",
+    "date_issued": "2026-10-10T08:00:00.000Z",
+    "pdf": { "url": "https://example.com/RE0042.pdf", "filename": "RE0042.pdf" }
+  }
+}

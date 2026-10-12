@@ -1,0 +1,63 @@
+{
+  "collection": "orders",
+  "fields": [
+    {
+      "id": "documents",
+      "type": "collection",
+      "label": "Lexware documents",
+      "link": {
+        "params": {
+          "order_id": "id"
+        }
+      },
+      "collection": "documents"
+    }
+  ],
+  "views": [
+    {
+      "id": "list",
+      "bulk_actions": [
+        {
+          "id": "invoice-selected",
+          "label": "Create Lexware invoices",
+          "function": "process-documents",
+          "loading_label": "Starting…",
+          "modal": {
+            "title": "Create Lexware invoices",
+            "description": "Creates an invoice in Lexware for each selected order that has none yet, paid or not. Orders that already have one are left alone. Orders in other currencies than EUR are skipped. The results appear under Orders → Lexware documents.",
+            "submit_label": "Create invoices"
+          }
+        }
+      ],
+      "fields": []
+    },
+    {
+      "id": "edit",
+      "extra_actions": [
+        {
+          "id": "create-invoice",
+          "label": "Create Lexware invoice",
+          "function": "create-invoice",
+          "loading_label": "Creating invoice…",
+          "hint": "Creates the invoice for this order in Lexware now, or shows the one it has",
+          "modal": {
+            "title": "Create Lexware invoice",
+            "description": "Creates the invoice for this order in Lexware now, whether or not the order is paid. If the order already has one, nothing is created.",
+            "submit_label": "Create invoice"
+          }
+        }
+      ],
+      "tabs": [
+        {
+          "id": "lexware",
+          "label": "Lexware",
+          "fields": [
+            {
+              "id": "documents"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "label": "Documents",
+  "description": "How invoices and credit notes are created. Titles, introduction and closing texts, the layout and the number ranges come from your Lexware settings.",
+  "fields": [
+    {
+      "id": "mode",
+      "label": "Create documents as",
+      "type": "select",
+      "description": "A finalized document is numbered, booked and has a PDF at once. It cannot be changed or deleted afterwards, only corrected in Lexware. A draft waits in Lexware for you to review and finalize it. Start with drafts, and always use drafts with a real Lexware account in your store's test environment.",
+      "options": [
+        { "value": "draft", "label": "Drafts, to review and finalize in Lexware" },
+        { "value": "final", "label": "Finalized documents" }
+      ],
+      "default": "draft",
+      "admin_span": 2
+    },
+    {
+      "id": "language",
+      "label": "Document language",
+      "type": "select",
+      "options": [
+        { "value": "de", "label": "German" },
+        { "value": "en", "label": "English" },
+        { "value": "auto", "label": "German for Germany, Austria and Switzerland, English elsewhere" }
+      ],
+      "default": "de",
+      "admin_span": 2
+    },
+    {
+      "id": "credit_notes",
+      "label": "Create credit notes for refunds",
+      "type": "toggle",
+      "description": "Each refund of an order that has a Lexware invoice becomes a credit note that names the invoice.",
+      "default": true
+    },
+    {
+      "id": "send_email",
+      "label": "E-mail documents to customers",
+      "type": "toggle",
+      "description": "Sends each finalized invoice and credit note to the customer, with a link to the PDF. The e-mail can be edited under Settings → Notifications. Drafts are not sent.",
+      "default": false
+    }
+  ]
+}

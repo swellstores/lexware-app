@@ -1,0 +1,18 @@
+{
+  "collection": "alerts",
+  "label": "Lexware Office needs attention",
+  "description": "Tells the store's administrators that Lexware refuses the connection, or that invoices or credit notes could not be created. One e-mail per incident, not one per order.",
+  "method": "email",
+  "admin": true,
+  "event": "created",
+  "new": true,
+  "subject": "Action needed: {% if key == 'connection' %}Lexware Office is not accepting documents from {{ store.name }}{% else %}a Lexware document for {{ store.name }} could not be created{% endif %}",
+  "sample": {
+    "key": "documents",
+    "message": "Lexware refused the document: Invalid taxRatePercentage or does not match booking date or country code.",
+    "subject": "Invoice for order 1042",
+    "count": 1,
+    "date_last_seen": "2026-10-10T12:00:00.000Z",
+    "app_id": "000000000000000000000000"
+  }
+}
