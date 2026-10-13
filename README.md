@@ -10,7 +10,7 @@ Data flows one way, from Swell to Lexware, with the merchant's own API key. The 
 2. In Swell, open Apps → Lexware Office → Settings, paste the key, save, and press **Test connection**. It names the Lexware company and says how it will be invoiced.
 3. Under **Documents**, choose:
    - **Create documents as**: drafts or finalized documents. See "Drafts and finalized documents".
-   - **Document language**: German, English, or German for Germany, Austria and Switzerland and English elsewhere.
+   - **Document language**: German, English, or German for Germany, Austria, Switzerland and Liechtenstein and English elsewhere.
    - **Create credit notes for refunds**.
    - **E-mail documents to customers**.
 4. Turn on **Create documents automatically**.

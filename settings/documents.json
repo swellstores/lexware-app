@@ -21,7 +21,7 @@
       "options": [
         { "value": "de", "label": "German" },
         { "value": "en", "label": "English" },
-        { "value": "auto", "label": "German for Germany, Austria and Switzerland, English elsewhere" }
+        { "value": "auto", "label": "German for Germany, Austria, Switzerland and Liechtenstein, English elsewhere" }
       ],
       "default": "de",
       "admin_span": 2

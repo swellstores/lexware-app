@@ -46,6 +46,8 @@ export function createStore(seed: { settings?: Row; orders?: Row[]; documents?: 
   };
   const orders = new Map((seed.orders || []).map((order) => [order.id, order]));
   let settings: Row = seed.settings || {};
+  /** The writes that asked for their events to be raised. In a workflow, no others raise any */
+  const events: string[] = [];
   /** Set to make the next write to a collection fail, as the store API would */
   const failures: { post?: Error } = {};
 
@@ -78,7 +80,10 @@ export function createStore(seed: { settings?: Row; orders?: Row[]; documents?: 
       }
       return { count: found.length, results: found.slice(0, query.limit || 15) };
     }),
-    post: vi.fn(async (path: string, data: Row) => {
+    post: vi.fn(async (path: string, { $events, ...data }: Row) => {
+      if ($events === true) {
+        events.push(`created ${path}`);
+      }
       const rows = collections[path.slice(1)];
       if (!rows) {
         throw new Error(`Unexpected write to ${path}`);
@@ -105,7 +110,10 @@ export function createStore(seed: { settings?: Row; orders?: Row[]; documents?: 
       if (!row) {
         throw new Error(`Unexpected write to ${path}`);
       }
-      const { $inc, ...changes } = data;
+      const { $inc, $events, ...changes } = data;
+      if ($events === true) {
+        events.push(`updated ${path}`);
+      }
       for (const [field, by] of Object.entries($inc || {})) {
         row[field] = (row[field] || 0) + (by as number);
       }
@@ -131,6 +139,7 @@ export function createStore(seed: { settings?: Row; orders?: Row[]; documents?: 
     swell,
     documents: collections.documents,
     alerts: collections.alerts,
+    events,
     failures,
     setSettings(next: Row) {
       settings = next;

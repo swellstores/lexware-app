@@ -113,7 +113,9 @@ export async function take(swell: StoreClient, doc: DocumentRecord, changes: Par
 
 /** Writes `changes` and keeps `doc` in step with what was stored */
 export async function save(swell: StoreClient, doc: DocumentRecord, changes: Partial<DocumentRecord>): Promise<void> {
-  const stored: any = await swell.put(`/documents/${doc.id}`, changes);
+  // The customer's e-mail is sent by the event of this change, and a write made in a
+  // workflow raises no events unless it asks for them
+  const stored: any = await swell.put(`/documents/${doc.id}`, changes.notify_customer === true ? { ...changes, $events: true } : changes);
   if (stored?.errors) {
     throw new Error(`Unable to update the document record: ${JSON.stringify(stored.errors)}`);
   }

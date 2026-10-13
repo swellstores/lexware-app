@@ -191,6 +191,14 @@ describe("invoice across borders", () => {
     expect(built.contact?.key).toBe(`${orders.frenchConsumer.account_id}|person||FR`);
   });
 
+  it("does not share a contact between orders without an account", () => {
+    const { account_id, account, ...guest } = orders.frenchConsumer;
+    const key = (order: Record<string, any>) => build(order).contact?.key;
+    expect(key({ ...guest, account_email: "Jean@Example.com" })).toBe("guest:jean@example.com|person||FR");
+    expect(key({ ...guest, account_email: "marie@example.com" })).toBe("guest:marie@example.com|person||FR");
+    expect(key(guest)).toBe(`guest:${guest.id}|person||FR`);
+  });
+
   it("is a tax-free export for a customer in Switzerland", () => {
     const built = build(orders.swissExport);
     expect(built.payload.taxConditions).toEqual({ taxType: "thirdPartyCountryDelivery" });

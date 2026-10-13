@@ -185,7 +185,7 @@ function toError(status: number, body: any, write: boolean): LexwareError {
       return new LexwareError(
         "permission",
         status,
-        "The API key is not allowed to do this. Create a key with all permissions, or with the permissions listed in the app's description.",
+        "The API key is not allowed to do this. Create a key with all permissions.",
       );
     case 429:
       return new LexwareError("rate_limit", status, "Lexware is receiving too many requests from this account.");

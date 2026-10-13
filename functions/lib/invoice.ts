@@ -524,8 +524,11 @@ function draftContact(
     payload.person = personName;
   }
 
+  // An order without an account must not be filed under another customer's contact: it
+  // is told apart by its e-mail, and stands alone when it has none
+  const customer = order.account_id || `guest:${email ? email.toLowerCase() : order.id}`;
   return {
-    key: [order.account_id || "guest", asCompany ? "company" : "person", decision.vatNumber || "", recipient.country].join("|"),
+    key: [customer, asCompany ? "company" : "person", decision.vatNumber || "", recipient.country].join("|"),
     payload,
   };
 }

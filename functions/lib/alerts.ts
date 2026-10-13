@@ -44,7 +44,10 @@ export async function raiseAlert(swell: StoreClient, key: AlertKey, message: str
     // The id of the settings record is the app's record id, which the dashboard address
     // of the app's pages is built from. The e-mail links there
     const settings = (await swell.settings()) as Settings | null;
+    // The e-mail is sent by the event of this record's creation, and a write made in a
+    // workflow raises no events unless it asks for them
     await swell.post("/alerts", {
+      $events: true,
       key,
       message,
       subject: subject || null,

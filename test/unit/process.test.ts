@@ -69,6 +69,8 @@ describe("creating an invoice", () => {
       problem: null,
       attempts: 1,
     });
+    // The e-mail is sent by the event of that write, which a workflow has to ask for
+    expect(store.events).toEqual([`updated /documents/${store.documents[0].id}`]);
     expect(lexware.created("invoices")).toHaveLength(1);
     expect(lexware.created("invoices")[0].query.get("finalize")).toBe("true");
   });
@@ -328,6 +330,7 @@ describe("documents that cannot be created", () => {
     expect(store.documents[0]).toMatchObject({ status: "failed", problem_code: "rejected", date_submitted: null, order_number: "100301" });
     expect(store.alerts).toHaveLength(1);
     expect(store.alerts[0]).toMatchObject({ key: "documents", subject: "Invoice for order 100301", count: 1, app_id: "app-record-id" });
+    expect(store.events).toEqual(["created /alerts"]);
 
     lexware.state.intercept = undefined;
     await invoiceOrder(context(), orders.singleRate.id, "order.paid");
