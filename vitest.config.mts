@@ -1,4 +1,5 @@
-import { defineWorkersConfig } from "@cloudflare/vitest-pool-workers/config";
+import { cloudflareTest } from "@cloudflare/vitest-plugin";
+import { defineConfig } from "vitest/config";
 import { readFileSync, existsSync } from "node:fs";
 import { homedir } from "node:os";
 import path from "node:path";
@@ -93,27 +94,30 @@ function loadSwellAuth(): SdkAuth {
 
 const sdkAuth = loadSwellAuth();
 
-export default defineWorkersConfig({
+export default defineConfig({
+  plugins: [
+    cloudflareTest({
+      miniflare: {
+        compatibilityDate: "2023-05-18",
+        // Reports a rejection as unhandled only if nothing has handled it by the end of the
+        // microtask queue. Without it, a rejection handled one step later fails the run
+        compatibilityFlags: ["unhandled_rejection_after_microtask_checkpoint"],
+        bindings: {
+          SWELL_STORE_ID: sdkAuth.storeId,
+          SWELL_SESSION_ID: sdkAuth.sessionId,
+          SWELL_API_BASE_URL: sdkAuth.apiBaseUrl,
+          SWELL_APP_ID: "lexware",
+          SWELL_ENVIRONMENT: "test",
+        },
+      },
+    }),
+  ],
   test: {
     globals: true,
+    // The Workers runtime cannot read Vitest's module cache from disk
+    fsModuleCache: false,
     include: ["test/**/*.test.ts"],
     exclude: ["node_modules", "docs"],
     setupFiles: ["./test/setup-globals.ts"],
-    poolOptions: {
-      workers: {
-        singleWorker: true,
-        isolatedStorage: true,
-        miniflare: {
-          compatibilityDate: "2023-05-18",
-          bindings: {
-            SWELL_STORE_ID: sdkAuth.storeId,
-            SWELL_SESSION_ID: sdkAuth.sessionId,
-            SWELL_API_BASE_URL: sdkAuth.apiBaseUrl,
-            SWELL_APP_ID: "lexware",
-            SWELL_ENVIRONMENT: "test",
-          },
-        },
-      },
-    },
   },
 });
