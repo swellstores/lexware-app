@@ -6,6 +6,7 @@
       "id": "api_key",
       "label": "API key",
       "type": "secret",
+      "required": true,
       "admin_span": 2
     },
     {
