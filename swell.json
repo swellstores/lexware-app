@@ -7,7 +7,6 @@
 	"support_email": "support@swell.is",
 	"documentation_url": "https://developers.swell.is/app-guides/lexware",
 	"repository_url": "https://github.com/swellstores/lexware-app",
-	"price_external": true,
 	"images": [
 		{
 			"id": "invoices",
