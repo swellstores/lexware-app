@@ -158,4 +158,4 @@ After a change in `functions/lib/` only, push with `--force`: push skips functio
 
 ## License
 
-[MIT](LICENSE.md)
+Swell App License. See [LICENSE](LICENSE).
