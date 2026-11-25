@@ -55,6 +55,11 @@ export function berlinDay(value: Date | string | undefined | null): string {
   return `${p.year}-${p.month}-${p.day}`;
 }
 
+/** Whole German calendar days from the day of one moment to the day of another */
+export function daysBetween(from: Date | string | undefined | null, to: Date | string | undefined | null): number {
+  return Math.round((Date.parse(berlinDay(to)) - Date.parse(berlinDay(from))) / 86400000);
+}
+
 /** The day as printed on a document: 10.10.2026 in German, 10 Oct 2026 in English */
 export function displayDate(value: Date | string | undefined | null, language: "de" | "en"): string {
   const p = berlinParts(asDate(value));

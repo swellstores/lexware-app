@@ -39,6 +39,14 @@
       "type": "toggle",
       "description": "Sends each finalized invoice and credit note to the customer, with a link to the PDF. The e-mail can be edited under Settings → Notifications. Drafts are not sent.",
       "default": false
+    },
+    {
+      "id": "unpaid_methods",
+      "label": "Also invoice unpaid orders paid with these payment methods",
+      "type": "tags",
+      "description": "IDs of manual payment methods, as listed under Settings → Payments, for example a payment method for net terms. An order paid with one of them is invoiced when it is placed rather than when it is paid, and stays open in Lexware until its payment is assigned there. Empty by default.",
+      "placeholder": "net_terms",
+      "admin_span": 2
     }
   ]
 }

@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import createInvoice from "../../functions/create-invoice";
 import creditRefund from "../../functions/credit-refund";
 import invoiceOrder from "../../functions/invoice-order";
+import invoicePlacedOrder from "../../functions/invoice-placed-order";
 import processDocument from "../../functions/process-document";
 import ProcessDocuments from "../../functions/process-documents";
 import resolveDocument from "../../functions/resolve-document";
@@ -96,6 +97,56 @@ describe("order.paid", () => {
     expect(String(result.message)).toContain("Lexware could not be reached for a day.");
     expect(store.documents[0]).toMatchObject({ status: "failed", problem_code: "unavailable" });
     expect(store.alerts[0].key).toBe("documents");
+  });
+});
+
+describe("order.submitted", () => {
+  const TERMS = { ...SETTINGS, documents: { ...SETTINGS.documents, unpaid_methods: ["net_terms"] } };
+  const termsOrder = {
+    ...orders.mixedRates,
+    billing: { ...orders.mixedRates.billing, method: "net_terms" },
+    $app: { wholesale_desk: { terms: true, net_days: 30, date_due: "2026-12-25T14:03:11.000Z", po_number: "PO-991" } },
+  };
+
+  function placed(order: Record<string, any>) {
+    return invoicePlacedOrder(request({ ...order, $event: { type: "order.submitted", delivery: { attempts: 0 } } }));
+  }
+
+  beforeEach(() => {
+    store = createStore({ settings: TERMS, orders: [termsOrder, orders.withCoupon] });
+  });
+
+  it("does nothing while no payment method is chosen", async () => {
+    store.setSettings(SETTINGS);
+    expect(await placed(termsOrder)).toEqual({ skipped: "Nothing to do for this record" });
+    expect(store.documents).toHaveLength(0);
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it("does nothing for other payment methods or for an order that is paid", async () => {
+    expect(await placed({ ...termsOrder, billing: { ...termsOrder.billing, method: "card" } })).toEqual({ skipped: "Nothing to do for this record" });
+    expect(await placed({ ...orders.withCoupon, billing: { ...orders.withCoupon.billing, method: "net_terms" } })).toEqual({
+      skipped: "Nothing to do for this record",
+    });
+    expect(store.documents).toHaveLength(0);
+  });
+
+  it("invoices an unpaid order of a chosen method when it is placed, with its due date and PO number", async () => {
+    vi.useFakeTimers({ toFake: ["Date"], now: new Date("2026-11-25T14:03:11.000Z") });
+    const result = await placed(termsOrder);
+    expect(result).toMatchObject({ result: "created", number: "RE0001" });
+    expect(store.documents[0]).toMatchObject({ source: "order.submitted", key: `invoice:${termsOrder.id}` });
+    const voucher = lexware.vouchers[0];
+    expect(voucher.lineItems[0].name).toBe("Bestellung Nr. 100302 / PO PO-991 vom 10.10.2026");
+    expect(voucher.paymentConditions).toEqual({ paymentTermLabel: "Zahlbar bis zum 25.12.2026.", paymentTermDuration: 30 });
+  });
+
+  it("leaves the invoice alone when the order is paid later, so it is not invoiced twice", async () => {
+    await placed(termsOrder);
+    const result = await invoiceOrder(request({ ...termsOrder, paid: true, $event: { type: "order.paid" } }));
+    expect(result).toMatchObject({ result: "exists", number: "RE0001" });
+    expect(lexware.vouchers).toHaveLength(1);
+    expect(store.documents).toHaveLength(1);
   });
 });
 

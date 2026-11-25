@@ -16,7 +16,7 @@
  *   invoice are the prices the customer saw.
  */
 
-import { displayDate, lexwareDate } from "./dates";
+import { daysBetween, displayDate, lexwareDate } from "./dates";
 import type { LineItem, Profile, VoucherAddress, VoucherPayload } from "./lexware";
 import {
   divideRounded,
@@ -439,8 +439,12 @@ export function buildInvoice(order: SwellRecord, options: BuildOptions): BuiltIn
 
   const t = texts(language);
   const amountField = layout.mode === "gross" ? "grossAmount" : "netAmount";
+  // Wholesale Desk's net terms, when the order has them: a PO number and a due date
+  const terms: SwellRecord = order.$app?.wholesale_desk || {};
+  const po = String(terms.po_number || "").trim().slice(0, 60);
+  const reference = String(order.number || order.id) + (po ? ` / PO ${po}` : "");
   const lineItems: LineItem[] = [
-    { type: "text", name: t.order(String(order.number || order.id), displayDate(order.date_created, language)) },
+    { type: "text", name: t.order(reference, displayDate(order.date_created, language)) },
     ...layout.lines.map(
       (line): LineItem => ({
         type: "custom",
@@ -469,6 +473,13 @@ export function buildInvoice(order: SwellRecord, options: BuildOptions): BuiltIn
     payload.paymentConditions = {
       paymentTermLabel: t.paid(paymentMethodName(order.billing?.method, language)),
       paymentTermDuration: 0,
+    };
+  } else if (terms.date_due && !Number.isNaN(Date.parse(terms.date_due))) {
+    // Due on the German day of the due date, and never before the invoice date
+    const days = Math.max(0, daysBetween(options.now, terms.date_due));
+    payload.paymentConditions = {
+      paymentTermLabel: t.due(displayDate(days > 0 ? terms.date_due : options.now, language)),
+      paymentTermDuration: days,
     };
   }
 

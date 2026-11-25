@@ -13,6 +13,7 @@ Data flows one way, from Swell to Lexware, with the merchant's own API key. The 
    - **Document language**: German, English, or German for Germany, Austria, Switzerland and Liechtenstein and English elsewhere.
    - **Create credit notes for refunds**.
    - **E-mail documents to customers**.
+   - **Also invoice unpaid orders paid with these payment methods**: empty unless you sell on payment terms. See "Payment terms".
 4. Turn on **Create documents automatically**.
 
 Settings are separate for the store's test and live environments, and both start empty.
@@ -22,6 +23,7 @@ Settings are separate for the store's test and live environments, and both start
 | In Swell | In Lexware |
 | --- | --- |
 | An order becomes paid | An invoice |
+| An order is placed unpaid with a payment method listed under **Also invoice unpaid orders paid with these payment methods** | An open invoice, due on the order's due date when it has one |
 | A payment of an invoiced order is refunded, in part or in full | A credit note that names the invoice |
 | **Create Lexware invoice** on an order, or **Create Lexware invoices** on selected orders | An invoice, paid or not |
 
@@ -30,6 +32,21 @@ Settings are separate for the store's test and live environments, and both start
 **The credit note.** A refund in Swell is an amount and names no items. A refund of the whole invoice repeats the invoice's lines. A partial refund becomes one line per tax rate, split in the proportion the rates have on the invoice. The credit note names the invoice, the order and the refund in its first line. It is not linked to the invoice in Lexware: Lexware allows one linked credit note per invoice and means it for unpaid invoices.
 
 **Orders without a document.** An order in another currency than EUR is skipped: Lexware invoices in EUR only. A refund of an order the app did not invoice is ignored. A free order never becomes "paid" in Swell and gets no invoice; use the action if one is wanted.
+
+## Payment terms
+
+For business customers who pay later, for example by bank transfer within 30 days, list the payment methods under Documents → **Also invoice unpaid orders paid with these payment methods**. Use the IDs of manual payment methods from Settings → Payments in Swell, such as `net_terms`. An unpaid order with one of these methods is invoiced when it is placed (event `order.submitted`) instead of when it is paid. When the order is paid later, in full or in part, the invoice exists already and no second one is created. The list is empty by default, and an empty list changes nothing.
+
+The invoice of an unpaid order does not say that it is paid. It arrives in Lexware as open, and the payments are assigned to it in Lexware, as for every other invoice (see "Limits and known issues").
+
+Apps such as Wholesale Desk can add terms to an order in `$app.wholesale_desk`. The app reads two of its fields when they are present and ignores them otherwise, so Wholesale Desk is not required:
+
+| Field | On the Lexware invoice |
+| --- | --- |
+| `date_due` (date and time) | The due date: its day in German time, never before the invoice date. Sent as `paymentConditions` with `paymentTermDuration` in days from the invoice date and the label "Zahlbar bis zum 25.12.2026." ("Payable by 25 Dec 2026."). Without it, Lexware applies the payment terms of the contact or the account |
+| `po_number` (up to 60 characters) | Beside the order number in the invoice's first line: "Bestellung Nr. 1001 / PO 4500-77 vom 25.11.2026". Lexware's invoices have no field of their own for it |
+
+A paid order's invoice still says that it is paid, whatever `date_due` says.
 
 ## Tax
 
@@ -78,7 +95,7 @@ Once the app is switched on, a paid or refunded order needs nothing from you: it
 - **Payments.** Invoices arrive in Lexware as open. Assign the payments there as usual (see "Limits and known issues").
 - **Drafts.** While the app creates drafts, review and finalize them in Lexware. Then choose **Read again from Lexware** on the document in Swell, or select several on the **Drafts** tab and choose **Retry**.
 - **Needs attention.** When the e-mail "Action needed" arrives, open Orders → Lexware documents → **Needs attention** and read the reason. Correct the cause and choose **Retry**, or choose **Mark as resolved** after creating the document in Lexware by hand.
-- **Orders the automation does not cover.** For unpaid orders, such as bank transfer, and for orders from before the install, choose **Create Lexware invoice** on the order, or select orders in the order list.
+- **Orders the automation does not cover.** For unpaid orders, such as bank transfer, unless their payment method is listed under "Payment terms", and for orders from before the install, choose **Create Lexware invoice** on the order, or select orders in the order list.
 
 ## When something goes wrong
 
@@ -97,7 +114,7 @@ E-mails to administrators are sent by the notification "Lexware Office needs att
 
 ## Limits and known issues
 
-- **Invoices are not marked as paid in Lexware.** The Public API cannot write payments. Invoices arrive as open and state that they are paid; payments are assigned in Lexware as usual. A paid order's invoice is due on its own date, so Lexware lists it as overdue from the next day until its payment is assigned. A credit note stays open until the refund is assigned to it.
+- **Invoices are not marked as paid in Lexware.** The Public API cannot write payments. Invoices arrive as open and state that they are paid; payments are assigned in Lexware as usual. A paid order's invoice is due on its own date, so Lexware lists it as overdue from the next day until its payment is assigned. A credit note stays open until the refund is assigned to it. An invoice for an unpaid order (see "Payment terms") is open until its payments, partial ones included, are assigned in Lexware. Payments recorded on the order in Swell are not passed on.
 - **Changes to an order after its invoice** (edited or canceled items without a refund) are not followed.
 - **Credit notes are by amount**, not by item, because a Swell refund names no items.
 - **Subscription renewals that create no order** are not invoiced. Renewals that create an order are.
@@ -118,7 +135,7 @@ A key with selected permissions needs: profile (read), invoices (read and write)
 | Settings | `settings/connection.json`, `settings/documents.json` | Key, switch, document options; **Test connection** and **Retry failed documents** |
 | Models | `models/documents.json`, `models/alerts.json`, `models/orders.json` | The ledger of documents; open alerts; a link from the order to its documents |
 | Views | `content/documents.json`, `content/orders.json` | The documents list and page; the order's tab and actions |
-| Event functions | `functions/invoice-order.ts`, `functions/credit-refund.ts` | `order.paid` and `payment.refund.succeeded`, only while the app is switched on |
+| Event functions | `functions/invoice-order.ts`, `functions/invoice-placed-order.ts`, `functions/credit-refund.ts` | `order.paid`, `order.submitted` (unpaid orders of the listed payment methods) and `payment.refund.succeeded`, only while the app is switched on |
 | Actions | `functions/create-invoice.ts`, `process-document.ts`, `resolve-document.ts`, `test-connection.ts` | The dashboard buttons |
 | Workflow | `functions/process-documents.ts` | Bulk work in steps of five documents, at Lexware's pace |
 | Notifications | `notifications/document-ready.*`, `notifications/alert.*` | The customer's e-mail; the administrators' alert |

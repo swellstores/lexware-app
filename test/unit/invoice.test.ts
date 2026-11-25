@@ -104,6 +104,33 @@ describe("invoice for a store with prices before tax", () => {
     expect(build(other).payload.paymentConditions?.paymentTermLabel).toBe("Der Rechnungsbetrag wurde bereits beglichen.");
   });
 
+  it("takes the due date and PO number of a Wholesale Desk terms order", () => {
+    const terms = { ...orders.mixedRates, $app: { wholesale_desk: { terms: true, net_days: 30, date_due: "2026-11-09T23:30:00.000Z", po_number: " 4500-77 " } } };
+    const built = build(terms);
+    expect(built.payload.lineItems[0]).toEqual({ type: "text", name: "Bestellung Nr. 100302 / PO 4500-77 vom 10.10.2026" });
+    // 23:30 UTC on 9 November is 10 November in Germany: 31 days after the invoice date
+    expect(built.payload.paymentConditions).toEqual({ paymentTermLabel: "Zahlbar bis zum 10.11.2026.", paymentTermDuration: 31 });
+    expect(build(terms, { language: "en" }).payload.paymentConditions?.paymentTermLabel).toBe("Payable by 10 Nov 2026.");
+  });
+
+  it("is never due before the invoice date, and a paid order's invoice still says it is paid", () => {
+    const late = { ...orders.mixedRates, $app: { wholesale_desk: { date_due: "2026-10-01T10:00:00.000Z" } } };
+    expect(build(late).payload.paymentConditions).toEqual({ paymentTermLabel: "Zahlbar bis zum 10.10.2026.", paymentTermDuration: 0 });
+    const paid = { ...orders.withCoupon, $app: { wholesale_desk: { date_due: "2026-11-09T10:00:00.000Z" } } };
+    expect(build(paid).payload.paymentConditions?.paymentTermLabel).toContain("bereits per Barzahlung beglichen");
+  });
+
+  it("leaves the invoice as it was without Wholesale Desk's fields", () => {
+    const empty = { ...orders.mixedRates, $app: { wholesale_desk: { po_number: "", date_due: null } } };
+    expect(build(empty).payload).toEqual(build(orders.mixedRates).payload);
+    expect(build(empty).payload.paymentConditions).toBeUndefined();
+  });
+
+  it("keeps a long PO number within its 60 characters", () => {
+    const long = { ...orders.mixedRates, $app: { wholesale_desk: { po_number: "P".repeat(80) } } };
+    expect(build(long).payload.lineItems[0].name).toBe(`Bestellung Nr. 100302 / PO ${"P".repeat(60)} vom 10.10.2026`);
+  });
+
   it("uses the billing address as a one-time address in Germany", () => {
     const built = build(orders.mixedRates);
     expect(built.payload.address).toEqual({
