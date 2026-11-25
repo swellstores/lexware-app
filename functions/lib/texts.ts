@@ -42,6 +42,7 @@ export interface Texts {
   discount(code?: string): string;
   discountAtRate(rate: string, code?: string): string;
   paid(method?: string): string;
+  due(date: string): string;
   refund(invoice: string, order: string, reference: string): string;
   refundLine(rate?: string): string;
 }
@@ -61,6 +62,7 @@ const TEXTS: Record<Language, Texts> = {
     discountAtRate: (rate, code) => `Rabatt (${code ? `${code}, ` : ""}${rate} % USt)`,
     paid: (method) =>
       method ? `Der Rechnungsbetrag wurde bereits per ${method} beglichen.` : "Der Rechnungsbetrag wurde bereits beglichen.",
+    due: (date) => `Zahlbar bis zum ${date}.`,
     refund: (invoice, order, reference) =>
       `Erstattung zu Rechnung ${invoice}, Bestellung Nr. ${order} (Ref. ${reference})`,
     refundLine: (rate) => (rate ? `Erstattung (${rate} % USt)` : "Erstattung"),
@@ -73,6 +75,7 @@ const TEXTS: Record<Language, Texts> = {
     discount: (code) => (code ? `Discount (${code})` : "Discount"),
     discountAtRate: (rate, code) => `Discount (${code ? `${code}, ` : ""}${rate}% VAT)`,
     paid: (method) => (method ? `The invoice amount has been paid by ${method}.` : "The invoice amount has been paid."),
+    due: (date) => `Payable by ${date}.`,
     refund: (invoice, order, reference) => `Refund for invoice ${invoice}, order no. ${order} (ref. ${reference})`,
     refundLine: (rate) => (rate ? `Refund (${rate}% VAT)` : "Refund"),
   },

@@ -14,6 +14,8 @@ export interface Settings {
     language?: "de" | "en" | "auto" | null;
     credit_notes?: boolean | null;
     send_email?: boolean | null;
+    /** Manual payment methods whose unpaid orders are invoiced when placed */
+    unpaid_methods?: string[] | null;
   };
 }
 
@@ -32,4 +34,11 @@ export function finalizes(settings: Settings): boolean {
 
 export function creditNotesEnabled(settings: Settings): boolean {
   return settings.documents?.credit_notes !== false;
+}
+
+/** True for an unpaid order paid with a method the merchant has invoiced when placed */
+export function invoicesUnpaid(settings: Settings, order: Record<string, any>): boolean {
+  const methods = settings.documents?.unpaid_methods;
+  const method = order?.billing?.method;
+  return !order?.paid && Boolean(method) && Array.isArray(methods) && methods.includes(method);
 }
